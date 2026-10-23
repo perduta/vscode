@@ -19,6 +19,12 @@ const baseOptions: esbuild.BuildOptions = {
 	logOverride: {
 		'import-is-undefined': 'error',
 	},
+	// Webviews and notebook renderers can share their page with scripts that install a global AMD
+	// `define` (e.g. RequireJS from the Jupyter renderer preloads). Bundled UMD dependencies such as
+	// fastdom (used by mermaid) would then register with that loader instead of exporting normally.
+	define: {
+		'define': 'undefined',
+	},
 };
 
 export async function run(
