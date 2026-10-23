@@ -78,6 +78,7 @@ function createStrategyTestContext(store: DisposableStore, harness: ITestLayoutH
 			}
 		},
 		onDidEndSessionLayoutRestore: onDidEndSessionLayoutRestore.event,
+		trackWork: () => { },
 		get togglingSidePane() { return state.togglingSidePane; },
 		multipleSessionsVisibleObs: derived(reader => harness.visibleSessionsObs.read(reader).length > 1),
 		multipleChatsVisibleObs: options?.multipleChatsVisible === undefined
@@ -114,8 +115,8 @@ suite('Desktop layout strategies', () => {
 		harness.visibleSessionsObs.set(session ? [session] : [], undefined);
 	}
 
-	function createDetailPanel(): DesktopDetailPanelCoordinator {
-		return store.add(harness.instaService.createInstance(DesktopDetailPanelCoordinator));
+	function createDetailPanel(ctx: IDesktopLayoutContext): DesktopDetailPanelCoordinator {
+		return store.add(harness.instaService.createInstance(DesktopDetailPanelCoordinator, ctx));
 	}
 
 	function createVisibilityStore(): DesktopVisibilityProfileStore {
@@ -145,7 +146,7 @@ suite('Desktop layout strategies', () => {
 	});
 
 	function createDraftStrategy(ctx: IDesktopLayoutContext, visibilityStore = createVisibilityStore()): DesktopDraftSessionStrategy {
-		return store.add(harness.instaService.createInstance(DesktopDraftSessionStrategy, ctx, createDetailPanel(), visibilityStore));
+		return store.add(harness.instaService.createInstance(DesktopDraftSessionStrategy, ctx, createDetailPanel(ctx), visibilityStore));
 	}
 
 	test('modal editor changes do not suppress revealing a file in the hidden main editor', async () => {
@@ -206,7 +207,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			harness.instaService.createInstance(DesktopVisibilityProfileStore, false),
-			createDetailPanel()
+			createDetailPanel(ctx)
 		));
 		harness.setPartHiddenCalls.length = 0;
 
@@ -237,7 +238,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			createVisibilityStore(),
-			createDetailPanel(),
+			createDetailPanel(ctx),
 		));
 		harness.partVisibility.set(Parts.AUXILIARYBAR_PART, true);
 		harness.onDidChangePartVisibility.fire({ partId: Parts.AUXILIARYBAR_PART, visible: true });
@@ -285,7 +286,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			createVisibilityStore(),
-			createDetailPanel(),
+			createDetailPanel(ctx),
 		));
 		harness.partVisibility.set(Parts.AUXILIARYBAR_PART, true);
 		harness.onDidChangePartVisibility.fire({ partId: Parts.AUXILIARYBAR_PART, visible: true });
@@ -583,7 +584,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			visibilityStore,
-			createDetailPanel()
+			createDetailPanel(ctx)
 		));
 		harness.setPartHiddenCalls.length = 0;
 
@@ -613,7 +614,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			createVisibilityStore(),
-			createDetailPanel()
+			createDetailPanel(ctx)
 		));
 		activate(session);
 		harness.setPartHiddenCalls.length = 0;
@@ -748,7 +749,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			visibilityStore,
-			createDetailPanel()
+			createDetailPanel(ctx)
 		));
 		activate(session);
 		harness.partVisibility.set(Parts.EDITOR_PART, true);
@@ -789,7 +790,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			harness.instaService.createInstance(DesktopVisibilityProfileStore, false),
-			createDetailPanel()
+			createDetailPanel(ctx)
 		));
 		harness.activeSessionObs.set(session, undefined);
 		harness.visibleSessionsObs.set([session, otherSession], undefined);
@@ -824,7 +825,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			createVisibilityStore(),
-			createDetailPanel()
+			createDetailPanel(ctx)
 		));
 		activate(session);
 		harness.partVisibility.set(Parts.EDITOR_PART, true);
@@ -855,7 +856,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			createVisibilityStore(),
-			createDetailPanel()
+			createDetailPanel(ctx)
 		));
 		harness.activeSessionObs.set(session, undefined);
 		harness.visibleSessionsObs.set([session, otherSession], undefined);
@@ -885,7 +886,7 @@ suite('Desktop layout strategies', () => {
 			DesktopExistingSessionStrategy,
 			ctx,
 			createVisibilityStore(),
-			createDetailPanel(),
+			createDetailPanel(ctx),
 		));
 		harness.visibleSessionsObs.set([initialSession, restoredSession], undefined);
 		harness.activeSessionObs.set(initialSession, undefined);

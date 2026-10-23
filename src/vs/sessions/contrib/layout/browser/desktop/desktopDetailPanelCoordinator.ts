@@ -15,6 +15,7 @@ import { HasDockedDetailsContext } from '../../../../common/contextkeys.js';
 import { ISessionsService } from '../../../../services/sessions/browser/sessionsService.js';
 import { CHANGES_VIEW_CONTAINER_ID } from '../../../changes/common/changes.js';
 import { SESSIONS_FILES_CONTAINER_ID } from '../../../files/browser/files.contribution.js';
+import { IDesktopLayoutContext } from './desktopLayoutStrategy.js';
 
 export const enum DetailPanelTarget {
 	Hidden,
@@ -38,6 +39,7 @@ export class DesktopDetailPanelCoordinator extends Disposable {
 	private _target = DetailPanelTarget.Preserve;
 
 	constructor(
+		private readonly _ctx: IDesktopLayoutContext,
 		@IAgentWorkbenchLayoutService private readonly _layoutService: IAgentWorkbenchLayoutService,
 		@IViewsService private readonly _viewsService: IViewsService,
 		@ISessionsService sessionsService: ISessionsService,
@@ -71,7 +73,7 @@ export class DesktopDetailPanelCoordinator extends Disposable {
 
 	private _queueTarget(target: DetailPanelTarget): void {
 		const generation = ++this._generation;
-		void this._sequencer.queue(() => this._syncTarget(target, generation)).catch(onUnexpectedError);
+		this._ctx.trackWork(this._sequencer.queue(() => this._syncTarget(target, generation)).catch(onUnexpectedError));
 	}
 
 	private async _syncTarget(target: DetailPanelTarget, generation: number): Promise<void> {
